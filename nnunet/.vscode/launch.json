@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: 当前文件",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                //"-t", "Task02_Heart",
+                //"-pl", "8",
+                //"-s", "0",
+                "-i", "/nnunet/nnunet/nnUNet_base/nnUNet_raw_splitted/Task02_Heart/imagesTs",
+                "-o", "/nnunet/nnUNet/nnUNet_result/",
+                "-t", "Task02_Heart",
+                "-tr", "nnUNetTrainer",
+                "-m", "3d_fullres",
+                "-f", "2"
+                //"3d_fullres", "nnUNetTrainer", "Task02_Heart", "2", "--ndet"
+            ],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+                "nnUNet_base": "/nnunet/nnunet/nnUNet_base/",
+                "nnUNet_preprocessed": "/nnunet/nnunet/nnUNet_preprocessed/",
+                "RESULTS_FOLDER": "/nnunet/nnUNet/nnUNet_result/",
+                "OMP_NUM_THREADS": "1"
+            },
+        }
+    ]
+}
