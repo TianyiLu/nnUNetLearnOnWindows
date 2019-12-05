@@ -1,31 +1,18 @@
 # Introduction 
 
-nnU-Net is a framework designed for medical image segmentation. Given a new dataset (that includes training cases) nnU-Net
-will automatically take care of the entire experimental pipeline.
-Unlike other segmentation methods published recently, nnU-Net does not use complicated architectural modifications and 
-instead revolves around the popular U-Net architecture. Still, nnU-Net outperforms many other methods and has been 
-shown to produce segmentations that are on par with or even exceed the state-of-the art across six well-known medical 
-segmentation challenges.
-
 For more information about nnU-Net, please read the following paper:
 
 `Isensee, Fabian, et al. "nnU-Net: Breaking the Spell on Successful Medical Image Segmentation." arXiv preprint arXiv:1904.08128 (2019).`
 
-Please also cite this paper if you are using nnU-Net for your research!
-
-Please note that so far nnU-Net has only been used internally. Tha vast majority of nnU-Net was developed in the context of 
-the Medical Segmentation Decathlon and was thus created with a very tight time schedule, so expect things to be a 
-little messy the deeper you dig.  
-
 This repository is still work in progress. Things may break. If that is the case, please let us know.
 
 # Installation 
-nnU-Net is only tested on Linux (Ubuntu). It may work on other operating systems as well but we do not guarantee it will.
+nnU-Net has been tested on Windows10 with CUDA 10.1 AND Pytorch 1.3.1, and edited by VSCODE.
 
 Installation instructions
 1) Install PyTorch (https://pytorch.org/get-started/locally/)
-2) Clone this repository `git clone https://github.com/MIC-DKFZ/nnUNet.git`
-3) Go into the repository (`cd nnUNet` on linux)
+2) Clone this repository `git clone https://github.com/TianyiLu/nnUNetLearnOnWindows.git`
+3) Go into the repository (`cd nnUNet`)
 4) Install with `pip install -r requirements.txt` followed by `pip install -e .`
 5) There is an issue with numpy and threading in python which results in too high CPU usage when using multiprocessing. 
 We strongly recommend you set OMP_NUM_THREADS=1 in your bashrc OR start all python processes 
@@ -63,13 +50,9 @@ run into memory problems (beware of datasets such as LiTS!)
 Running this command will to several things:
 1) If you stored your data as 4D nifti the data will be split into a sequence of 3d niftis. Back when I started 
 SimpleITK did not support 4D niftis. This was simply done out of necessity.
-2) Images are cropped to the nonzero region. This does nothing for most datasets. Most brain datasets however are brain 
-extracted, meaning that the brain is surrounded by zeros. There is no need to push all these zeros through the GPUs so 
-we simply save a little bit of time doing this. Cropped data is stored in the `cropped_output_dir` (`paths.py`).
-3) The data is analyzed and information about spacing, intensity distributions and shapes are determined
-4) nnU-Net configures the U-Net architectures based on that information. All U-Nets are configured to optimally use 
+2) nnU-Net configures the U-Net architectures based on that information. All U-Nets are configured to optimally use 
 **12GB Nvidia TitanX** GPUs. There is currently no way of adapting to smaller or larger GPUs.
-5) nnU-Net runs the preprocessing and saves the preprocessed data in `preprocessing_output_dir`.
+3) nnU-Net runs the preprocessing and saves the preprocessed data in `preprocessing_output_dir`.
 
 I strongly recommend you set `preprocessing_output_dir` on a SSD. HDDs are typically too slow for data loading. 
 
@@ -86,12 +69,12 @@ default setting is to train each of these models in a five-fold cross-validation
 
 Trained models are stored in `network_training_output_dir` (specified in `paths.py`).
 
-### 2D U-Net 
+### 2D U-Net (Not tested) 
 For `FOLD` in [0, 4], run:
 
 `python run/run_training.py 2d nnUNetTrainer TaskXX_MY_DATASET FOLD --ndet`
 
-### 3D U-Net (full resolution)
+### 3D U-Net (full resolution, tested and updated. Now our output is based on this model.)
 For `FOLD` in [0, 4], run:
 
 `python run/run_training.py 3d_fullres nnUNetTrainer TaskXX_MY_DATASET FOLD --ndet`
@@ -170,32 +153,6 @@ This will ensemble the predictions located in `FODLER1, FOLDER2, ...` and write 
 The model training pipeline above is for challenge participations. Depending on your task you may not want to train all 
 U-Net models and you may also not want to run a cross-validation all the time.
 
-#### I don't want to train all these models. Which one is the best?
-Here are some recommendations about what U-Net model to train:
-- It is safe to say that on average, the 3D U-Net model (3d_fullres) was most robust. If you just want to use nnU-Net because you 
-need segmentations, I recommend you start with this.
-- If you are not happy with the results from the 3D U-Net then you can try the following:
-  - if your cases are very large so that the patch size of the 3d U-Net only covers a very small fraction of an image then 
-  it is possible that the 3d U-Net cannot capture sufficient contextual information in order to be effective. If this 
-  is the case, you should consider running the 3d U-Net cascade (3d_lowres followed by 3d_cascade_fullres)
-  - If your data is very anisotropic then a 2D U-Net may actually be a better choice (Promise12, ACDC, Task05_Prostate 
-  from the decathlon are good examples)
-
-You do not have to run five-fold cross-validation all the time. If you want to test single model performance, use
- *all* for `FOLD` instead of a number.
- 
-CAREFUL: DO NOT use fold=all when you intend to run the cascade! You must run the cross-validation in 3d_lowres so that you get proper (=not overfitted) low resolution predictions.
- 
-#### Manual Splitting of Data
-The cross-validation in nnU-Net splits on a per-case basis. This may sometimes not be desired, for example because 
-several training cases may be the same patient (different time steps or annotators). If this is the case, then you need to
-manually create a split file. To do this, first let nnU-Net create the default split file. Run one of the network 
-trainings (any of them works fine for this) and abort after the first epoch. nnU-Net will have created a split file automatically:
-`preprocessing_output_dir/TaskXX_MY_DATASET/splits_final.pkl`. This file contains a list (length 5, one entry per fold). 
-Each entry in the list is a dictionary with keys 'train' and 'val' pointing to the patientIDs assigned to the sets. 
-To use your own splits in nnU-Net, you need to edit these entries to what you want them to be and save it back to the 
-splits_final.pkl file. Use load_pickle and save_pickle from batchgenerators.utilities.file_and_folder_operations for convenience.
-
 #### Sharing Models
 You can share trained models by simply sending the corresponding output folder from `network_training_output_dir` to 
 whoever you want share them with. The recipient can then use nnU-Net for inference with this model.
@@ -207,39 +164,3 @@ whoever you want share them with. The recipient can then use nnU-Net for inferen
     the amount of GPU memory needed to ~9 GB and allow to run everything on 11GB cards as well. You can also manually 
     edit the plans.pkl files (that are located in the subfolders of preprocessed_output_dir) to make nnU-net use less 
     feature maps. This can however have an impact on segmentation performance
-
-2) ##### I get the error `seg from prev stage missing` when running the cascade
-
-    You need to run all five folds of `3d_lowres`. Segmentations of the previous stage can only be generated from the 
-    validation set, otherwise we would overfit.
-   
-3) ##### Why am I getting `RuntimeError: CUDA error: device-side assert triggered`?
-
-    This error often goes along with something like `void THCudaTensor_scatterFillKernel(TensorInfo<Real, IndexType>, 
-    TensorInfo<long, IndexType>, Real, int, IndexType) [with IndexType = unsigned int, Real = float, Dims = -1]: 
-    block: [4770,0,0], thread: [374,0,0] Assertion indexValue >= 0 && indexValue < tensor.sizes[dim] failed.`.
-    
-    This means that your dataset contains unexpected values in the segmentations. nnU-Net expects all labels to be 
-    consecutive integers. So if your dataset has 4 classes (background and three foregound labels), then the labels 
-    must be 0, 1, 2, 3 (where 0 must be background!). There cannot be any other values in the ground truth segmentations. 
-
-4) ##### Why is no 3d_lowres model created?
-
-    3d_lowres is created only if the patch size in 3d_fullres less than 1/4 of the voxels of the median shape of the data 
-    in 3d_fullres (for example Liver is about 512x512x512 and the patch size is 128x128x128, so that's 1/64 and thus 
-    3d_lowres is created). You can enforce the creation of 3d_lowres models for smaller datasets by changing the value of
-    `HOW_MUCH_OF_A_PATIENT_MUST_THE_NETWORK_SEE_AT_STAGE0` (located in experiment_planning.configuration).
-    
-## Extending nnU-Net
-nnU-Net was developed in a very short amount of time and has not been planned thoroughly form the start (this is not 
-really possible for such a project). As such it is quite convoluted and complex, maybe unnessearily so. If you wish to 
-extend nnU-Net, ask questions if something is not clear. But please also keep in mind that this 
-software is provided 'as is' and the amount of support we can give is limited :-)
-
-## Changelog
-nothing so far
-
-
-
-
-<sup>1</sup>http://medicaldecathlon.com/
