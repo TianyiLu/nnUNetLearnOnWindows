@@ -6,6 +6,10 @@ For more information about nnU-Net, please read the following paper:
 
 This repository is still work in progress. Things may break. If that is the case, please let us know.
 
+For a quick download with Medical Segmentation Decathlon dataset, please download from:
+https://pan.baidu.com/s/1o0q1f7oF8EyW0kJjFYtR4w 
+with password：mos7
+
 # Installation 
 nnU-Net has been tested on Windows10 with CUDA 10.1 AND Pytorch 1.3.1, and edited by VSCODE.
 
