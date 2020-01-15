@@ -170,7 +170,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', type=str, help="task name. There must be a matching folder in "
                                                        "raw_dataset_dir", required=True)
-    parser.add_argument('-pl', '--processes_lowres', type=int, default=8, help='number of processes used for '
+    parser.add_argument('-pl', '--processes_lowres', type=int, default=1, help='number of processes used for '
                                                                                'preprocessing 3d_lowres data, image '
                                                                                'splitting and image cropping '
                                                                                'Default: 8. The distinction between '
@@ -178,13 +178,13 @@ if __name__ == "__main__":
                                                                                'is necessary because preprocessing '
                                                                                'at full resolution needs a lot of '
                                                                                'RAM', required=False)
-    parser.add_argument('-pf', '--processes_fullres', type=int, default=8, help='number of processes used for '
+    parser.add_argument('-pf', '--processes_fullres', type=int, default=1, help='number of processes used for '
                                                                                 'preprocessing 2d and 3d_fullres '
                                                                                 'data. Default: 3', required=False)
     parser.add_argument('-o', '--override', type=int, default=0, help="set this to 1 if you want to override "
                                                                       "cropped data and intensityproperties. Default: 0",
                         required=False)
-    parser.add_argument('-s', '--use_splitted', type=int, default=1, help='1 = use splitted data if already present ('
+    parser.add_argument('-s', '--use_splitted', type=int, default=0, help='1 = use splitted data if already present ('
                                                                           'skip split_4d). 0 = do splitting again. '
                                                                           'It is save to set this to 1 at all times '
                                                                           'unless the dataset was updated in the '

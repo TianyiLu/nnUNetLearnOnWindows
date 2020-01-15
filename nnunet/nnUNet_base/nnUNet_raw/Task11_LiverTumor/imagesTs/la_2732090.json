@@ -1,0 +1,28 @@
+{
+	"Modality": "CT",
+	"Manufacturer": "GE",
+	"ManufacturersModelName": "Revolution_GSI",
+	"InstitutionName": "Shanghai_Renji_Hospital",
+	"StationName": "HD02",
+	"PatientPosition": "FFS",
+	"ProcedureStepDescription": "ABD",
+	"SoftwareVersions": "sles_hde.132",
+	"SeriesDescription": "Recon_2:",
+	"ProtocolName": "Recon_2:",
+	"ScanOptions": "HELICAL_MODE",
+	"ImageType": ["ORIGINAL", "PRIMARY", "AXIAL"],
+	"SeriesNumber": 1001,
+	"AcquisitionTime": "09:55:39.591060",
+	"AcquisitionNumber": 2,
+	"XRayExposure": 13,
+	"ReconMatrixPE": 512,
+	"ImageOrientationPatientDICOM": [
+		1,
+		0,
+		0,
+		0,
+		1,
+		0	],
+	"ConversionSoftware": "dcm2niix",
+	"ConversionSoftwareVersion": "v1.0.20190902"
+}

@@ -11,22 +11,22 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                //"-t", "Task02_Heart",
-                //"-pl", "8",
+                "-t", "Task11_LiverTumor",
+                //"-pl", "1",
                 //"-s", "0",
-                "-i", "/nnunet/nnunet/nnUNet_base/nnUNet_raw_splitted/Task02_Heart/imagesTs",
-                "-o", "/nnunet/nnUNet/nnUNet_result/",
-                "-t", "Task02_Heart",
-                "-tr", "nnUNetTrainer",
-                "-m", "3d_fullres",
-                "-f", "2"
+                //"-i", "/nnUNetLearnOnWindows/nnunet/nnUNet_base/nnUNet_raw_splitted/Task02_Heart/imagesTs",
+                //"-o", "/nnUNetLearnOnWindows/nnUNet/nnUNet_result/",
+                //"-t", "Task11_LiverTumor",
+                //"-tr", "nnUNetTrainer",
+                //"-m", "3d_fullres",
+                //"-f", "2"
                 //"3d_fullres", "nnUNetTrainer", "Task02_Heart", "2", "--ndet"
             ],
             "env": {
                 "CUDA_VISIBLE_DEVICES": "0",
-                "nnUNet_base": "/nnunet/nnunet/nnUNet_base/",
-                "nnUNet_preprocessed": "/nnunet/nnunet/nnUNet_preprocessed/",
-                "RESULTS_FOLDER": "/nnunet/nnUNet/nnUNet_result/",
+                "nnUNet_base": "/nnUNetLearnOnWindows/nnunet/nnUNet_base/",
+                "nnUNet_preprocessed": "/nnUNetLearnOnWindows/nnunet/nnUNet_preprocessed/",
+                "RESULTS_FOLDER": "/nnUNetLearnOnWindows/nnUNet/nnUNet_result/",
                 "OMP_NUM_THREADS": "1"
             },
         }
