@@ -236,10 +236,10 @@ if __name__ == "__main__":
             analyze_dataset(t, override=override, collect_intensityproperties=True, num_processes=processes_lowres)
             plan_and_preprocess(t, processes_lowres, processes_fullres, no_preprocessing)
     else:
-        if not use_splitted or not isdir(join(splitted_4d_output_dir, task)):
-            print("splitting task ", task)
-            split_4d(task)
+        #if not use_splitted or not isdir(join(splitted_4d_output_dir, task)):
+        #    print("splitting task ", task)
+        #    split_4d(task)
 
-        crop(task, override=override, num_threads=processes_lowres)
+        #crop(task, override=override, num_threads=processes_lowres)
         analyze_dataset(task, override, collect_intensityproperties=True, num_processes=processes_lowres)
-        plan_and_preprocess(task, processes_lowres, processes_fullres, no_preprocessing)
+        #plan_and_preprocess(task, processes_lowres, processes_fullres, no_preprocessing)

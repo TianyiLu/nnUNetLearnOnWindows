@@ -72,7 +72,7 @@ class DatasetAnalyzer(object):
                 region_volume_per_class[c].append(np.sum(labelmap == l) * vol_per_voxel)
         return volume_per_class, region_volume_per_class
 
-    def _load_seg_analyze_classes(self, args):
+    def _load_seg_analyze_classes(self, t_patient_identifier, t_all_classes):
         """
         1) what class is in this training case?
         2) what is the size distribution for each class?
@@ -80,7 +80,7 @@ class DatasetAnalyzer(object):
         4) check if all in one region
         :return:
         """
-        patient_identifier, all_classes = args
+        patient_identifier, all_classes = t_patient_identifier, t_all_classes
         seg = np.load(join(self.folder_with_cropped_data, patient_identifier) + ".npz")['data'][-1]
         pkl = load_pickle(join(self.folder_with_cropped_data, patient_identifier) + ".pkl")
         vol_per_voxel = np.prod(pkl['itk_spacing'])
@@ -109,14 +109,16 @@ class DatasetAnalyzer(object):
         class_dct = self.get_classes()
         all_classes = np.array([int(i) for i in class_dct.keys()])
         all_classes = all_classes[all_classes > 0]  # remove background
-
+       
         if self.overwrite or not isfile(self.props_per_case_file):
-            p = Pool(self.num_processes)
-            res = p.map(self._load_seg_analyze_classes, zip(self.patient_identifiers,
-                                                            [all_classes] * len(self.patient_identifiers)))
-            p.close()
-            p.join()
-
+            res = []
+            #res = p.map(self._load_seg_analyze_classes, zip(self.patient_identifiers,
+            #                                                [all_classes] * len(self.patient_identifiers)))
+            #p.close()
+            #p.join()
+            for patient in self.patient_identifiers:
+                t_unique_classes, t_all_in_one_region, t_volume_per_class, t_region_sizes = self._load_seg_analyze_classes(patient, all_classes)
+                res.append([t_unique_classes, t_all_in_one_region, t_volume_per_class, t_region_sizes])
             props_per_patient = OrderedDict()
             for p, (unique_classes, all_in_one_region, voxels_per_class, region_volume_per_class) in \
                     zip(self.patient_identifiers, res):
@@ -130,6 +132,7 @@ class DatasetAnalyzer(object):
             save_pickle(props_per_patient, self.props_per_case_file)
         else:
             props_per_patient = load_pickle(self.props_per_case_file)
+        
         return class_dct, props_per_patient
 
     def get_sizes_and_spacings_after_cropping(self):
@@ -180,7 +183,44 @@ class DatasetAnalyzer(object):
         percentile_99_5 = np.percentile(voxels, 99.5)
         percentile_00_5 = np.percentile(voxels, 00.5)
         return median, mean, sd, mn, mx, percentile_99_5, percentile_00_5
+    
+    def analyze_dataset(self, collect_intensityproperties=True):
+        # get all spacings and sizes
+        sizes, spacings = self.get_sizes_and_spacings_after_cropping()
 
+        # get all classes and what classes are in what patients
+        # class min size
+        # region size per class
+        class_dct, segmentation_props_per_patient = self.analyse_segmentations()
+        all_classes = np.array([int(i) for i in class_dct.keys()])
+        all_classes = all_classes[all_classes > 0]
+
+        # modalities
+        modalities = self.get_modalities()
+
+        # collect intensity information
+        if collect_intensityproperties:
+            intensityproperties = self.collect_intensity_properties(len(modalities))
+        else:
+            intensityproperties = None
+
+        # size reduction by cropping
+        size_reductions = self.get_size_reduction_by_cropping()
+
+        dataset_properties = dict()
+        dataset_properties['all_sizes'] = sizes
+        dataset_properties['all_spacings'] = spacings
+        dataset_properties['segmentation_props_per_patient'] = segmentation_props_per_patient
+        dataset_properties['class_dct'] = class_dct  # {int: class name}
+        dataset_properties['all_classes'] = all_classes
+        dataset_properties['modalities'] = modalities  # {idx: modality name}
+        dataset_properties['intensityproperties'] = intensityproperties
+        dataset_properties['size_reductions'] = size_reductions  # {patient_id: size_reduction}
+
+        save_pickle(dataset_properties, join(self.folder_with_cropped_data, "dataset_properties.pkl"))
+        return dataset_properties
+
+'''
     def collect_intensity_properties(self, num_modalities):
         if self.overwrite or not isfile(self.intensityproperties_file):
             p = Pool(self.num_processes)
@@ -224,49 +264,13 @@ class DatasetAnalyzer(object):
         else:
             results = load_pickle(self.intensityproperties_file)
         return results
-
-    def analyze_dataset(self, collect_intensityproperties=True):
-        # get all spacings and sizes
-        sizes, spacings = self.get_sizes_and_spacings_after_cropping()
-
-        # get all classes and what classes are in what patients
-        # class min size
-        # region size per class
-        class_dct, segmentation_props_per_patient = self.analyse_segmentations()
-        all_classes = np.array([int(i) for i in class_dct.keys()])
-        all_classes = all_classes[all_classes > 0]
-
-        # modalities
-        modalities = self.get_modalities()
-
-        # collect intensity information
-        if collect_intensityproperties:
-            intensityproperties = self.collect_intensity_properties(len(modalities))
-        else:
-            intensityproperties = None
-
-        # size reduction by cropping
-        size_reductions = self.get_size_reduction_by_cropping()
-
-        dataset_properties = dict()
-        dataset_properties['all_sizes'] = sizes
-        dataset_properties['all_spacings'] = spacings
-        dataset_properties['segmentation_props_per_patient'] = segmentation_props_per_patient
-        dataset_properties['class_dct'] = class_dct  # {int: class name}
-        dataset_properties['all_classes'] = all_classes
-        dataset_properties['modalities'] = modalities  # {idx: modality name}
-        dataset_properties['intensityproperties'] = intensityproperties
-        dataset_properties['size_reductions'] = size_reductions  # {patient_id: size_reduction}
-
-        save_pickle(dataset_properties, join(self.folder_with_cropped_data, "dataset_properties.pkl"))
-        return dataset_properties
-
+'''
 
 if __name__ == "__main__":
     tasks = [i for i in os.listdir(splitted_4d_output_dir) if os.path.isdir(os.path.join(splitted_4d_output_dir, i))]
     tasks.sort()
 
-    t = 'Task14_BoneSegmentation'
+    t = 'Task11_LiverTumor'
 
     print("\n\n\n", t)
     cropped_out_dir = os.path.join(cropped_output_dir, t)
